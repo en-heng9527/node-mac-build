@@ -1,0 +1,37 @@
+name: Build Mac Executable
+on: 
+  workflow_dispatch:  # 手动触发打包（更灵活）
+  push:               # 提交代码自动触发（可选）
+jobs:
+  build-mac:
+    runs-on: ubuntu-latest  # 用Linux环境打包，无系统限制
+    steps:
+      - name: 拉取代码
+        uses: actions/checkout@v4
+      
+      - name: 安装Node.js 16
+        uses: actions/setup-node@v4
+        with:
+          node-version: 16
+          registry-url: https://registry.npm.taobao.org/  # 国内源提速
+      
+      - name: 安装pkg
+        run: npm install -g pkg
+      
+      - name: 安装项目依赖（若有）
+        run: npm install || echo "无依赖，跳过"
+      
+      - name: 打包macOS可执行文件（兼容M1/M2/Intel）
+        run: |
+          # 打包M1/M2/M3（arm64）版本（主流）
+          pkg --targets node22-macos-arm64 --output my-app-mac-arm64 app.js
+          # 打包Intel（x64）版本（兼容旧Mac）
+          pkg --targets node22-macos-x64 --output my-app-mac-x64 app.js
+      
+      - name: 上传打包结果
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-executables
+          path: |
+            ./my-app-mac-arm64
+            ./my-app-mac-x64
