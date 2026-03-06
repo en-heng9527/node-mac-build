@@ -1,0 +1,19 @@
+{
+  "name": "image-archiving",
+  "version": "1.0.0",
+  "description": "图片归档工具",
+  "main": "图片归档2.js",
+  "scripts": {
+    "start": "node 图片归档2.js"
+  },
+  "keywords": [
+    "image",
+    "archiving",
+    "excel"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "xlsx": "^0.18.5"
+  }
+}
