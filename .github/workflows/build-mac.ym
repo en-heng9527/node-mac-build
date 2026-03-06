@@ -1,37 +1,45 @@
-name: Build Mac Executable
-on: 
-  workflow_dispatch:  # 手动触发打包（更灵活）
-  push:               # 提交代码自动触发（可选）
+name: Build Mac App (Node 16)
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
 jobs:
-  build-mac:
-    runs-on: ubuntu-latest  # 用Linux环境打包，无系统限制
+  build:
+    runs-on: macos-latest
+
     steps:
-      - name: 拉取代码
+      # 1. 拉取代码
+      - name: Checkout code
         uses: actions/checkout@v4
-      
-      - name: 安装Node.js 16
+
+      # 2. 设置 Node.js 16
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 16
-          registry-url: https://registry.npm.taobao.org/  # 国内源提速
-      
-      - name: 安装pkg
+          node-version: '16'
+
+      # 3. 安装 pkg 打包工具
+      - name: Install pkg
         run: npm install -g pkg
-      
-      - name: 安装项目依赖（若有）
-        run: npm install || echo "无依赖，跳过"
-      
-      - name: 打包macOS可执行文件（兼容M1/M2/Intel）
+
+      # 4. 执行打包 (关键步骤)
+      # 说明：
+      # - 输入文件加了引号 "图片归档2.js"，防止因空格报错
+      # - -t node16-macos-x64 对应你的 Node 16 版本需求
+      # - --output 指定输出文件名，建议输出为英文名(如 app)，避免下载解压时乱码
+      - name: Build Binary
         run: |
-          # 打包M1/M2/M3（arm64）版本（主流）
-          pkg --targets node22-macos-arm64 --output my-app-mac-arm64 app.js
-          # 打包Intel（x64）版本（兼容旧Mac）
-          pkg --targets node22-macos-x64 --output my-app-mac-x64 app.js
-      
-      - name: 上传打包结果
+          npx pkg "图片归档2.js" -t node16-macos-x64 --output dist/app
+
+      # 5. 赋予可执行权限
+      - name: Make executable
+        run: chmod +x dist/app
+
+      # 6. 上传结果
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: mac-executables
-          path: |
-            ./my-app-mac-arm64
-            ./my-app-mac-x64
+          name: mac-executable
+          path: dist/app
